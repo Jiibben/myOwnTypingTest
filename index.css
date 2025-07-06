@@ -1,0 +1,78 @@
+body {
+    background: #f5f7fb;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+    margin: 0;
+}
+
+/* Title Styling */
+h1 {
+    font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+    font-size: 2.8rem;
+    font-weight: bold;
+    margin-bottom: 36px;
+    color: #232946;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #80ffe8, #53a8fa);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+    text-shadow: 0 2px 8px rgba(83,168,250,0.08);
+}
+
+#text {
+    background: #fff;
+    padding: 24px 32px;
+    border-radius: 18px;
+    box-shadow: 0 6px 24px rgba(30,40,90,0.09), 0 1.5px 4px rgba(30,40,90,0.03);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0  ;
+    width: 80vw;
+    min-width: 480px;
+    max-width: 1500px;
+}
+
+.line {
+    display : flex;
+    flex-direction: row;
+    margin : 0;
+    padding : 0;
+    gap: 1.2px;
+}
+
+#text span {
+    display: inline-block;
+    padding: 5px 7px;
+    font-size: 1.4rem;
+    border-radius: 6px;
+    transition: background 0.1s, color 0.1s;
+    background: transparent;
+    color: #222;
+    min-width: 1.2em;
+    text-align: center;
+    margin: 0;
+}
+
+/* Highlight current letter */
+#text .current {
+    background: #ffe082;
+    box-shadow: 0 1px 6px rgba(255, 208, 130, 0.1);
+}
+
+/* Correct and incorrect letters */
+#text .correct {
+    color: #33b864;
+    background: #d0f5df;
+}
+
+#text .incorrect {
+    color: #e94d35;
+    background: #ffd5d0;
+}
