@@ -25,7 +25,7 @@ _You can add a link here if you deploy your app, e.g. Netlify/Vercel/GitHub Page
 
 ## 🖥️ Screenshot
 
-![TypingTest Screenshot](./screenhot.png)
+![TypingTest Screenshot](./screeshot.png)
 
 ---
 
