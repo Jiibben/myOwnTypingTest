@@ -1,15 +1,77 @@
-let appState = {
-  elements: [],
-  user_position: 0,
-  max_line_size: 0,
-  window_size : 3
-};
+/*
+#################################
+###      state and init       ###
+################################
+*/
+
+let appState;
+
+const charState = Object.freeze({
+  NORMAL: "normal",
+  CURRENT: "current",
+  CORRECT: "correct",
+  INCORRECT: "incorrect"
+});
+
+
+function newState(userPositionVal, maxLineSizeVal, numberOfLineShownVal, charsVal, wordsVal){
+    return {
+            userPosition: userPositionVal,
+            maxLineSize:  maxLineSizeVal,
+            numberOfLineShown: numberOfLineShownVal,
+            chars : charsVal,
+            words: wordsVal
+    };
+}
+
+function initializeAppState(){
+    //setup initial values 
+    return newState(0, 0, 10, [])
+}
+
+async function init(){
+    appState = initializeAppState();
+    //fetch api for words
+    const words  = await fetchWords();
+    //process chars 
+    const chars = processWords(words);
+    //compute maxLineSize
+    const maxLineSize = getMaxLineSize();
+    appState = newState(appState.userPosition, maxLineSize, appState.numberOfLineShown, chars, words);
+}
+
+/*
+#################################
+###      word fetching        ###
+################################
+*/
+
+async function fetchWords(){
+    try {
+        const response = await fetch("https://random-word-api.herokuapp.com/word?number=1000");
+        const data = await response.json();
+        return data;
+    } catch (error){
+        showError("could not load words");
+    }
+}
+
+function processWords(words){
+    let chars = []
+    for (let word of words){
+        for (let charVal of word){
+            chars.push({char : charVal, state: charState.NORMAL});
+        }
+        chars.push({char: " ", state: charState.NORMAL});
+    }
+    return chars;
+}
 
 // Calculate how many span elements can fit on one line
-function calculateSpansPerLine() {
+function getMaxLineSize() {
     const textZone = document.querySelector("#text");
-    
-    const tempSpan = createCharSpan("W");
+
+    const tempSpan = createSpanChar({char:"W", state: charState.NORMAL});
     tempSpan.style.visibility = "hidden";
     textZone.appendChild(tempSpan);
     
@@ -30,138 +92,98 @@ function calculateSpansPerLine() {
     return Math.max(1, spansPerLine); // Ensure at least 1 span per line
 }
 
-// Create a span for a letter/character
-function createCharSpan(character) {
-    const a = document.createElement("span");
-    a.textContent = character;
-    a.classList.add("active-char");
-    return a;
-}
- 
-function createDivLine(){
-    let line = document.createElement("div");
-    line.classList.add("line");
-    return line;
-}
-// remove every line in the text div 
-function clearLines() {
-    const textZone = document.querySelector("#text");
-    while (textZone.firstChild) {
-        textZone.removeChild(textZone.firstChild);
+/*
+#################################
+###       displaying          ###
+################################
+*/
+
+function displayState(){
+    clearTexteZone();
+    const divTexte = document.querySelector("#text");
+    startingChar = Math.floor(appState.userPosition / appState.maxLineSize) * appState.maxLineSize;
+    endingChar =  appState.maxLineSize * appState.numberOfLineShown;
+
+    for (let i = startingChar; i < endingChar; i++){
+        let curr_char = appState.chars[i];
+        const span = createSpanChar(curr_char);
+        divTexte.appendChild(span);
     }
 }
 
-//create element list 
-function createElementList(word_list) {
-    let elements = [];
-    for (const word of word_list) {
-        for (const char of word) {
-            let letter = createCharSpan(char);
-            elements.push(letter);
-        }
-    let space = createCharSpan(" ");
-    elements.push(space);
-    }
-
-    return elements;
-}
-
-
-function arrangeLinesOfElements(elements){
-    let lines = [];
-    index = 0;
-    let curr_line =[]
-    while (index  < elements.length){
-        if (index % appState.max_line_size == 0 && index != 0){
-            lines.push(curr_line);
-            curr_line = [];
-        }
-        curr_line.push(elements[index]);
-        index++;
-    }
-    if (curr_line.length != 0) lines.push(curr_line);
-
-    return lines;
-}
-
-function createDivOfElements(lines){
-    let lines_element = []
-    let line_element = createDivLine()
-    for (let line of lines){
-        for(let element of line){
-            line_element.appendChild(element);
-        }
-        lines_element.push(line_element);
-        line_element = createDivLine();
-    }
-    return lines_element;
-}
-
-function displayLines(line_divs){
-    const textZone = document.querySelector("#text")
-    clearLines();
-    for (let i = 0; i < appState.window_size && i < line_divs.length; i++){
-        textZone.appendChild(line_divs[i]);
-    }
-    if(appState.elements.length > 0) {
-    appState.elements[0].classList.add("current")
+function clearTexteZone(){
+    const divTexte = document.querySelector("#text");
+    while (divTexte.hasChildNodes()){
+        divTexte.removeChild(divTexte.firstChild);
     }
 }
 
+function createSpanChar(curr_char){
+    const span = document.createElement("span");
+    span.innerText = curr_char.char;
+    span.classList.add("active-char")
+    switch(curr_char.state){
+        case charState.CORRECT:
+            span.classList.add("correct");
+            break;
+        case charState.INCORRECT:
+            span.classList.add("incorrect");
+            break;
+        case charState.CURRENT:
+            span.classList.add("current");
+            break;
+        case charState.NORMAL:
+            span.classList.add("active-char")
+            break;
+    }
+    return span;
 
-function get_word_list(){
-    fetch('https://random-word-api.herokuapp.com/word?number=1000')
-    .then(response => response.json()) 
-    .then(data => {
-        appState.max_line_size = calculateSpansPerLine()
-        appState.elements = createElementList(data);
-        element_lines= arrangeLinesOfElements(appState.elements);
-        divs = createDivOfElements(element_lines);
-        displayLines(divs, appState.window_size);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
 }
+init().then(() =>
+{
+    displayState();
 
-get_word_list();
+})
 
 
-
-
+/*
+#################################
+###      event handling       ###
+################################
+*/
 document.addEventListener('keydown', e => {
     if (e.key === "Backspace") {
-        if (appState.user_position <=0 ) return;
+        if (appState.user_position<=0) return;
+        let currentPosition = appState.userPosition;
+        let newPosition = currentPosition-1;
+        let newChars = appState.chars
+        newChars[currentPosition].state = charState.NORMAL;
+        newChars[newPosition].state = charState.CURRENT;
+        appState = newState(newPosition, appState.maxLineSize, appState.numberOfLineShown, newChars, appState.words);
 
-        let curr_element = appState.elements[appState.user_position];
-        curr_element.classList.remove("current");
-        appState.user_position--;
-        let new_element = appState.elements[appState.user_position]
-        new_element.classList.remove("correct");
-        new_element.classList.remove("incorrect");
-        appState.elements[appState.user_position].classList.add("current");
-        return;
+    }else{
+        if (appState.user_position >= appState.chars.length) return;
+        if (e.key.length !== 1) return;
+        let currentPosition = appState.userPosition;
+        let newPosition = currentPosition+1;
+        let newChars = appState.chars
+        newChars[currentPosition].state =  e.key === newChars[currentPosition].char ? charState.CORRECT : charState.INCORRECT;
+        newChars[newPosition].state = charState.CURRENT;
+        appState = newState(newPosition, appState.maxLineSize, appState.numberOfLineShown, newChars, appState.words);
+
     }
-    if (appState.user_position >= appState.elements.length) return;
-    if (e.key.length !== 1) return;
-    let curr_element =appState.elements[appState.user_position];
-    let isCorrect = e.key === curr_element.textContent;
-    curr_element.classList.toggle("correct", isCorrect);
-    curr_element.classList.toggle("incorrect", !isCorrect);
-
-    curr_element.classList.remove("current");
-    appState.user_position++;
-
-    if ((appState.user_position-1) %  appState.max_line_size == 0 && (appState.user_position-1) != 0){
-        console.log("tahsah")
-        let textZone = document.querySelector("#text");
-        textZone.removeChild(textZone.firstChild);
-        let new_index = appState.window_size + Math.floor(appState.user_position / appState.max_line_size) -1;
-        if (new_index < divs.length) textZone.appendChild(divs[new_index]);
-    }
-
-    if (appState.user_position < appState.elements.length) {
-        appState.elements[appState.user_position].classList.add("current");
-    }
+    displayState();
+    return;    
 });
 
+document.addEventListener('resize', e => {
+    
+});
+
+
+window.addEventListener('resize', function() {
+    // Code to run when the window is resized
+    // For your app: recalculate maxLineSize and rerender!
+    appState = newState(appState.userPosition, getMaxLineSize(), appState.numberOfLineShown, appState.chars, appState.words)
+    displayState();
+});

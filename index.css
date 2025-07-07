@@ -33,19 +33,19 @@ h1 {
     box-shadow: 0 6px 24px rgba(30,40,90,0.09), 0 1.5px 4px rgba(30,40,90,0.03);
     display: flex;
     flex-wrap: wrap;
-    gap: 0  ;
+    gap: 2;
     width: 80vw;
     min-width: 480px;
     max-width: 1500px;
 }
 
-.line {
+/* .line {
     display : flex;
     flex-direction: row;
     margin : 0;
     padding : 0;
     gap: 1.2px;
-}
+} */
 
 #text span {
     display: inline-block;
