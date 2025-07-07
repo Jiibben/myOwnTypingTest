@@ -17,12 +17,6 @@ Built with vanilla JavaScript and a clean, responsive UI.
 
 ---
 
-## 🎬 Live Demo
-
-_You can add a link here if you deploy your app, e.g. Netlify/Vercel/GitHub Pages!_
-
----
-
 ## 🖥️ Screenshot
 
 ![TypingTest Screenshot](./screeshot.png)
